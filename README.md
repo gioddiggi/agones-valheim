@@ -49,11 +49,18 @@ docker compose up -d
 
 Server config and game data are stored in `./valheim-server`, which is ignored by git along with `valheim.env`.
 
-## CI
+## Deploy on Kubernetes
 
-Every push to `main` runs `.github/workflows/docker-publish.yml`, which builds the image and pushes it to Docker Hub with the `latest` tag. It needs two repository secrets:
+`example/gameserver.yaml` runs the Valheim server and the `agones-valheim` monitor as a single Agones `GameServer`. The Valheim container reads its configuration from the `valheim-env` Secret in `example/secret.yaml`, which ships with example values:
 
-| Secret               | Value                                       |
-| -------------------- | ------------------------------------------- |
-| `DOCKERHUB_USERNAME` | Docker Hub username                         |
-| `DOCKERHUB_TOKEN`    | Docker Hub access token with read/write scope |
+```sh
+kubectl apply -f example/
+kubectl get gameserver valheim   # shows the node address and the allocated game port
+```
+
+To use your own settings, edit `example/secret.yaml` or build the Secret from `valheim.env` instead:
+
+```sh
+kubectl create secret generic valheim-env --from-env-file=valheim.env
+kubectl apply -f example/gameserver.yaml
+```

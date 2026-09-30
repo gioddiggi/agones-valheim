@@ -1,0 +1,76 @@
+# Valheim dedicated server as an Agones GameServer, with the agones-valheim
+# monitor running next to it.
+#
+# The Valheim container is configured from the valheim-env Secret in
+# secret.yaml, so apply the whole folder:
+#
+#   kubectl apply -f example/
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: valheim-config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: agones.dev/v1
+kind: GameServer
+metadata:
+  name: valheim
+spec:
+  # Container the ports below are exposed from
+  container: valheim
+  ports:
+    - name: game
+      portPolicy: Dynamic
+      containerPort: 2456
+      protocol: UDP
+    - name: query
+      portPolicy: Dynamic
+      containerPort: 2457
+      protocol: UDP
+  # Nothing calls the SDK's Health() yet, so with health checking enabled
+  # Agones would keep killing the Valheim container. Re-enable once the
+  # monitor sends health pings.
+  health:
+    disabled: true
+  template:
+    spec:
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: valheim
+          image: ghcr.io/community-valheim-tools/valheim-server
+          envFrom:
+            - secretRef:
+                name: valheim-env
+          securityContext:
+            capabilities:
+              add:
+                - SYS_NICE
+          resources:
+            requests:
+              cpu: "1"
+              memory: 2Gi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /opt/valheim
+        - name: agones-valheim
+          image: giovannidegiorgio/agones-valheim:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+      volumes:
+        # Worlds and backups, kept across GameServer restarts
+        - name: config
+          persistentVolumeClaim:
+            claimName: valheim-config
+        # Server files downloaded by steamcmd on startup
+        - name: data
+          emptyDir: {}
