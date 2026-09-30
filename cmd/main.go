@@ -1,7 +1,9 @@
 package cmd
 
-import "fmt"
+import (
+	"log/slog"
+)
 
 func Execute() {
-	fmt.Println("Hello from Agones")
+	slog.Info("Hello from Agones")
 }

@@ -7,8 +7,9 @@ services:
       - ./valheim-server/config:/config
       - ./valheim-server/data:/opt/valheim
     ports:
-      - "2456-2458:2456-2458/udp"
-      - "9001:9001/tcp"
+      - "2456-2458:2456-2458/udp" # Game
+      - "9001:9001/tcp" # Supervisor
+      - "8080:80/tcp" # Status
     env_file:
       - ./valheim.env
     restart: always
