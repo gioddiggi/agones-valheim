@@ -1,9 +1,11 @@
 package cmd
 
 import (
-	"log/slog"
+	"context"
+
+	"github.com/gioddiggi/agones-valheim/internal/monitor"
 )
 
 func Execute() {
-	slog.Info("Hello from Agones")
+	monitor.Start(context.Background())
 }
