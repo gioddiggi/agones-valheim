@@ -32,9 +32,10 @@ spec:
       portPolicy: Dynamic
       containerPort: 2457
       protocol: UDP
-  # Nothing calls the SDK's Health() yet, so with health checking enabled
-  # Agones would keep killing the Valheim container. Re-enable once the
-  # monitor sends health pings.
+  # The monitor sends health pings only once the server is up and the
+  # GameServer is Ready, while Agones counts missed pings from
+  # initialDelaySeconds onwards. To enable health checking, set an
+  # initialDelaySeconds longer than the Valheim download and boot.
   health:
     disabled: true
   template:

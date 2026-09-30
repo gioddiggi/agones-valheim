@@ -12,6 +12,42 @@ import (
 	"github.com/gioddiggi/agones-valheim/pkg/data"
 )
 
+// WaitReady blocks until the Valheim status endpoint reports a running server
+// for the first time, probing it every env.HealthCheckInterval. Startup has no
+// attempt limit or timeout, since downloading and booting the server can take
+// several minutes: it only gives up when ctx is cancelled (graceful shutdown),
+// returning ctx.Err().
+func WaitReady(ctx context.Context, env *config.Env) error {
+	slog.Info("Waiting for Valheim server to start...")
+
+	ticker := time.NewTicker(env.HealthCheckInterval)
+	defer ticker.Stop()
+
+	lastErr := ""
+	for {
+		err := probe(ctx, env.HealthCheckURL)
+		if err == nil {
+			slog.Info("Server status is: Running")
+			return nil
+		}
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+
+		// Log only when the reason changes, startup would repeat it for minutes
+		if err.Error() != lastErr {
+			lastErr = err.Error()
+			slog.Info("Valheim server is not ready yet", "reason", err)
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-ticker.C:
+		}
+	}
+}
+
 // Check probes the Valheim status endpoint until it reports a running server,
 // waiting env.HealthCheckInterval between two failed attempts.
 // It gives up after env.HealthCheckAttempts failed attempts, after
