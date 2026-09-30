@@ -13,7 +13,7 @@ func Start(ctx context.Context) {
 	_, err := agones.NewSDK()
 
 	if err != nil {
-		slog.Error("Error while creating Agones SDK: ", err)
+		slog.Error("Error while creating Agones SDK", "error", err)
 	} else {
 		slog.Info("Successfully created Agones SDK")
 	}

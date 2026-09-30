@@ -2,3 +2,8 @@
 valheim.env
 .env
 valheim-server
+
+
+# Binaries
+tmp
+bin

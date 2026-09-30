@@ -6,7 +6,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN make build
+RUN CGO_ENABLED=0 make build
 
 
 FROM alpine:3.24.2
