@@ -92,10 +92,17 @@ HEALTH_CHECK_URL=http://localhost:8080/status.json make run
 
 ## Docker image
 
-The image is published to Docker Hub as [`giovannidegiorgio/agones-valheim`](https://hub.docker.com/r/giovannidegiorgio/agones-valheim) by the `Publish Docker image` workflow, on every push to `main`:
+The image is published to Docker Hub as [`giovannidegiorgio/agones-valheim`](https://hub.docker.com/r/giovannidegiorgio/agones-valheim) by the `Publish Docker image` workflow whenever a `vX.Y.Z` tag is pushed. Each release is tagged `X.Y.Z`, `X.Y`, `X` (from `v1` onwards) and `latest`:
 
 ```sh
 docker pull giovannidegiorgio/agones-valheim:latest
+```
+
+To cut a release:
+
+```sh
+git tag v1.2.3
+git push origin v1.2.3
 ```
 
 To build it locally:
